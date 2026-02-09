@@ -2,109 +2,116 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Professional Firebase API Interface</title>
+    <title>Firestore Advanced API</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 p-6">
+<body class="bg-slate-100 p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto">
-        <div class="mb-8">
-            <input type="text" id="searchInput" placeholder="Tam adı yazın və Enter basın (Məs: Rebeka)..." 
-                   class="w-full p-4 rounded-xl border-2 border-blue-100 shadow-sm focus:border-blue-500 outline-none transition-all">
-            <p class="text-xs text-gray-500 mt-2">* Server tərəfli axtarış üçün tam dəqiq ad yazılmalıdır.</p>
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white p-6 rounded-2xl shadow-sm mb-6 border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" id="nameFilter" placeholder="Adla axtar (kiçik hərflə)..." class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
+            
+            <select id="cardTypeFilter" class="p-2 border rounded-lg outline-none">
+                <option value="">Bütün Kartlar</option>
+                <option value="visa">Visa</option>
+                <option value="mastercard">Mastercard</option>
+                <option value="maestro">Maestro</option>
+            </select>
+
+            <select id="currencyFilter" class="p-2 border rounded-lg outline-none">
+                <option value="">Bütün Valyutalar</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="UAH">UAH</option>
+            </select>
+
+            <button id="searchBtn" class="bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">Axtar</button>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-800 text-white">
-                        <th class="p-4">ID</th>
-                        <th class="p-4">Ad Soyad</th>
-                        <th class="p-4">Email</th>
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800 text-white">
+                    <tr>
+                        <th class="p-4">Müştəri</th>
+                        <th class="p-4">Kart</th>
+                        <th class="p-4">Balans</th>
                         <th class="p-4">Ölkə</th>
                     </tr>
                 </thead>
-                <tbody id="userTableBody"></tbody>
+                <tbody id="userTableBody">
+                    <tr><td colspan="4" class="p-10 text-center text-gray-400">Yüklənir...</td></tr>
+                </tbody>
             </table>
-        </div>
-
-        <div id="paginationControls" class="mt-8 flex justify-center">
-            <button id="loadMoreBtn" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
-                Daha 100 nəfər yüklə
-            </button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, query, orderByChild, limitToFirst, equalTo, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getFirestore, collection, query, where, getDocs, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = { databaseURL: "https://api-test-thefeerid-default-rtdb.firebaseio.com/" };
+        // ÖZ KONFİQURASİYANIZI BURA ƏLAVƏ EDİN
+        const firebaseConfig = {
+            apiKey: "AIzaSy...",
+            authDomain: "layihe-adi.firebaseapp.com",
+            projectId: "layihe-adi",
+            storageBucket: "layihe-adi.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        
-        let currentLimit = 100;
-        let isSearching = false;
+        const db = getFirestore(app);
 
-        // Əsas Funksiya: Dataları gətir
-        async function fetchUsers(searchTerm = "") {
-    const userQuery = query(ref(db, '/'), limitToFirst(1000)); // İlk 1000 nəfəri çəkirik
-    
-    try {
-        const snapshot = await get(userQuery);
-        const data = snapshot.val();
-        let usersArray = data ? Object.values(data) : [];
-
-        if (searchTerm) {
-            // BRAUZERDƏ AXTARIŞ: Böyük-kiçik hərf fərqini aradan qaldırır
-            const lowerSearch = searchTerm.toLowerCase();
-            usersArray = usersArray.filter(u => 
-                u.first_name.toLowerCase().includes(lowerSearch) || 
-                u.last_name.toLowerCase().includes(lowerSearch) ||
-                u.email.toLowerCase().includes(lowerSearch)
-            );
-            document.getElementById('paginationControls').classList.add('hidden');
-        } else {
-            document.getElementById('paginationControls').classList.remove('hidden');
-            // Əgər axtarış yoxdursa, limiti tətbiq et
-            usersArray = usersArray.slice(0, currentLimit);
-        }
-
-        renderTable(usersArray);
-    } catch (err) { console.error("Xəta:", err); }
-}
-
-        function renderTable(users) {
+        async function getData() {
             const tableBody = document.getElementById('userTableBody');
-            if (users.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-400">Məlumat tapılmadı...</td></tr>`;
-                return;
+            
+            // Filtrlərdən dəyərləri alırıq
+            const nameVal = document.getElementById('nameFilter').value.toLowerCase();
+            const cardVal = document.getElementById('cardTypeFilter').value;
+            const currVal = document.getElementById('currencyFilter').value;
+
+            let q = query(collection(db, "customers"), limit(100));
+
+            // Firestore Sorğu Məntiqi
+            // DİQQƏT: Firestore-da eyni anda bir neçə "where" istifadə edəndə İndeks tələb oluna bilər
+            if (cardVal) {
+                q = query(q, where("card_type", "==", cardVal));
             }
-            tableBody.innerHTML = users.map(u => `
-                <tr class="border-b hover:bg-blue-50 transition-colors">
-                    <td class="p-4 text-gray-500">#${u.id}</td>
-                    <td class="p-4 font-medium">${u.first_name} ${u.last_name}</td>
-                    <td class="p-4 text-blue-600">${u.email}</td>
-                    <td class="p-4"><span class="bg-gray-200 px-2 py-1 rounded text-xs">${u.country}</span></td>
-                </tr>
-            `).join('');
+            if (currVal) {
+                q = query(q, where("currency_code", "==", currVal));
+            }
+            if (nameVal) {
+                // Node.js ilə yüklədiyimiz "first_name_lower" sahəsini istifadə edirik
+                q = query(q, where("first_name_lower", "==", nameVal));
+            }
+
+            try {
+                const querySnapshot = await getDocs(q);
+                let html = "";
+                
+                querySnapshot.forEach((doc) => {
+                    const u = doc.data();
+                    html += `
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-4">
+                                <div class="font-bold">${u.first_name} ${u.last_name}</div>
+                                <div class="text-xs text-gray-400">${u.email}</div>
+                            </td>
+                            <td class="p-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs uppercase">${u.card_type}</span></td>
+                            <td class="p-4 font-bold text-green-600">${u.moey}</td>
+                            <td class="p-4">${u.country}</td>
+                        </tr>`;
+                });
+
+                tableBody.innerHTML = html || '<tr><td colspan="4" class="p-10 text-center">Nəticə tapılmadı</td></tr>';
+            } catch (error) {
+                console.error("Xəta:", error);
+                tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Xəta baş verdi: ${error.message}</td></tr>`;
+            }
         }
 
-        // Event Listeners
-        document.getElementById('loadMoreBtn').addEventListener('click', () => {
-            currentLimit += 100;
-            fetchUsers();
-        });
-
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                fetchUsers(e.target.value.trim());
-            }
-        });
-
-        // İlkin yükləmə
-        fetchUsers();
+        document.getElementById('searchBtn').addEventListener('click', getData);
+        window.onload = getData;
     </script>
 </body>
 </html>
-
