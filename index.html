@@ -65,57 +65,67 @@
         const db = getFirestore(app);
 
         async function getData() {
-            const tableBody = document.getElementById('userTableBody');
-            
-            // Filtrlərdən dəyərləri alırıq
-            const nameVal = document.getElementById('nameFilter').value.toLowerCase();
-            const cardVal = document.getElementById('cardTypeFilter').value;
-            const currVal = document.getElementById('currencyFilter').value;
+    const tableBody = document.getElementById('userTableBody');
+    const nameVal = document.getElementById('nameFilter').value.toLowerCase();
+    const cardVal = document.getElementById('cardTypeFilter').value;
+    const currVal = document.getElementById('currencyFilter').value;
 
-            let q = query(collection(db, "customers"), limit(100));
+    let q = collection(db, "customers");
 
-            // Firestore Sorğu Məntiqi
-            // DİQQƏT: Firestore-da eyni anda bir neçə "where" istifadə edəndə İndeks tələb oluna bilər
-            if (cardVal) {
-                q = query(q, where("card_type", "==", cardVal));
-            }
-            if (currVal) {
-                q = query(q, where("currency_code", "==", currVal));
-            }
-            if (nameVal) {
-                // Node.js ilə yüklədiyimiz "first_name_lower" sahəsini istifadə edirik
-                q = query(q, where("first_name_lower", "==", nameVal));
-            }
+    // 1. AD FİLTRİ (Əsas dəyişiklik buradadır)
+    if (nameVal) {
+        // Bu kod "ca" yazanda "Caresse", "Camilla" və s. hamısını tapacaq
+        q = query(q, 
+            where("first_name_lower", ">=", nameVal), 
+            where("first_name_lower", "<=", nameVal + "\uf8ff")
+        );
+    }
 
-            try {
-                const querySnapshot = await getDocs(q);
-                let html = "";
-                
-                querySnapshot.forEach((doc) => {
-                    const u = doc.data();
-                    html += `
-                        <tr class="border-b hover:bg-slate-50">
-                            <td class="p-4">
-                                <div class="font-bold">${u.first_name} ${u.last_name}</div>
-                                <div class="text-xs text-gray-400">${u.email}</div>
-                            </td>
-                            <td class="p-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs uppercase">${u.card_type}</span></td>
-                            <td class="p-4 font-bold text-green-600">${u.moey}</td>
-                            <td class="p-4">${u.country}</td>
-                        </tr>`;
-                });
+    // 2. KART FİLTRİ
+    if (cardVal) {
+        q = query(q, where("card_type", "==", cardVal));
+    }
 
-                tableBody.innerHTML = html || '<tr><td colspan="4" class="p-10 text-center">Nəticə tapılmadı</td></tr>';
-            } catch (error) {
-                console.error("Xəta:", error);
-                tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500">Xəta baş verdi: ${error.message}</td></tr>`;
-            }
-        }
+    // 3. VALYUTA FİLTRİ
+    if (currVal) {
+        q = query(q, where("currency_code", "==", currVal));
+    }
+
+    // Əgər heç bir filtr yoxdursa, standart limit qoyaq
+    if (!nameVal && !cardVal && !currVal) {
+        q = query(q, limit(100));
+    }
+
+    try {
+        const querySnapshot = await getDocs(q);
+        let html = "";
+        
+        querySnapshot.forEach((doc) => {
+            const u = doc.data();
+            html += `
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-4">
+                        <div class="font-bold">${u.first_name} ${u.last_name}</div>
+                        <div class="text-xs text-gray-400">${u.email}</div>
+                    </td>
+                    <td class="p-4 text-xs font-mono uppercase">${u.card_type}</td>
+                    <td class="p-4 font-bold text-green-600">${u.moey}</td>
+                    <td class="p-4">${u.country}</td>
+                </tr>`;
+        });
+
+        tableBody.innerHTML = html || '<tr><td colspan="4" class="p-10 text-center">Nəticə tapılmadı</td></tr>';
+    } catch (error) {
+        console.error("Xəta:", error);
+        // Əgər "Index Required" xətası çıxsa, konsoldakı linkə basmalısan
+    }
+}
 
         document.getElementById('searchBtn').addEventListener('click', getData);
         window.onload = getData;
     </script>
 </body>
 </html>
+
 
 
