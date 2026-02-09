@@ -1,126 +1,103 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fintech Dashboard | Professional API</title>
+    <title>Fintech Analytics | Professional Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script>
+        // Dark Mode Logic
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .modal-animate { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-900 pb-10">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
 
-    <header class="max-w-7xl mx-auto pt-8 px-4">
-        <div class="mb-8">
-            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Müştəri Analitikası</h1>
-            <p class="text-slate-500">Baza üzrə real-vaxt göstəriciləri və maliyyə statistikası.</p>
+    <nav class="max-w-7xl mx-auto p-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-extrabold tracking-tighter text-blue-600 dark:text-blue-400 uppercase">FinPulse</h1>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Global Analytics</p>
         </div>
+        <button id="themeToggle" class="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:scale-110 transition">
+            <span id="themeIcon">🌙</span>
+        </button>
+    </nav>
 
-        <div id="statsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 transition hover:shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="p-3 bg-blue-50 text-blue-600 rounded-2xl text-xl">👥</span>
-                    <span class="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-lg">TOTAL</span>
-                </div>
-                <h3 id="totalUsers" class="text-3xl font-extrabold text-slate-800">...</h3>
-                <p class="text-slate-400 text-xs mt-1">Qeydiyyatlı müştəri</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 transition hover:shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl text-xl">💰</span>
-                    <span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">AVERAGE</span>
-                </div>
-                <h3 id="avgBalance" class="text-3xl font-extrabold text-slate-800">...</h3>
-                <p class="text-slate-400 text-xs mt-1">Orta balans miqdarı</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 transition hover:shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="p-3 bg-purple-50 text-purple-600 rounded-2xl text-xl">💳</span>
-                    <span class="text-[10px] font-bold text-purple-500 bg-purple-50 px-2 py-1 rounded-lg">TOP CARD</span>
-                </div>
-                <h3 id="popCard" class="text-2xl font-extrabold text-slate-800 capitalize">...</h3>
-                <p class="text-slate-400 text-xs mt-1">Ən çox istifadə edilən</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 transition hover:shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="p-3 bg-orange-50 text-orange-600 rounded-2xl text-xl">⏰</span>
-                    <span class="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-lg">UPDATED</span>
-                </div>
-                <h3 id="lastUpdate" class="text-sm font-bold text-slate-600">...</h3>
-                <p class="text-slate-400 text-xs mt-1">Son analiz vaxtı</p>
-            </div>
+    <header class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <p class="text-xs font-bold text-slate-400 uppercase">Total Customers</p>
+            <h3 id="totalUsers" class="text-2xl font-black mt-1">...</h3>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <p class="text-xs font-bold text-slate-400 uppercase">Avg Balance</p>
+            <h3 id="avgBalance" class="text-2xl font-black mt-1 text-emerald-500">...</h3>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <p class="text-xs font-bold text-slate-400 uppercase">Most Used Card</p>
+            <h3 id="popCard" class="text-2xl font-black mt-1 uppercase">...</h3>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <p class="text-xs font-bold text-slate-400 uppercase">Last Sync</p>
+            <h3 id="lastUpdate" class="text-[10px] font-bold mt-2 text-slate-500 italic">...</h3>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto mt-10 px-4 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        <div class="lg:col-span-3 space-y-6">
-            
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-wrap items-end gap-4">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="text-[10px] font-black text-slate-400 ml-1 uppercase">Axtarış (Ad)</label>
-                    <input type="text" id="nameFilter" placeholder="Məs: Rebeka" class="w-full mt-2 p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 transition">
-                </div>
-                <div class="w-40">
-                    <label class="text-[10px] font-black text-slate-400 ml-1 uppercase">Kart</label>
-                    <select id="cardTypeFilter" class="w-full mt-2 p-3 bg-slate-50 border-none rounded-2xl outline-none">
-                        <option value="">Hamısı</option>
-                        <option value="visa">Visa</option>
-                        <option value="mastercard">Mastercard</option>
-                        <option value="maestro">Maestro</option>
-                    </select>
-                </div>
-                <div class="w-44">
-                    <label class="text-[10px] font-black text-slate-400 ml-1 uppercase">Ölkə</label>
-                    <input type="text" id="countryFilter" placeholder="Məs: Ukraine" class="w-full mt-2 p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 transition">
-                </div>
-                <button id="searchBtn" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-600 transition-all transform active:scale-95 shadow-lg shadow-slate-200">
-                    Filtrlə
-                </button>
+    <main class="max-w-7xl mx-auto mt-8 px-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="lg:col-span-3 space-y-4">
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-[2rem] shadow-sm flex flex-wrap gap-4 items-end">
+                <input type="text" id="nameFilter" placeholder="Search by name..." class="flex-1 min-w-[150px] p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border-none outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="cardTypeFilter" class="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border-none outline-none">
+                    <option value="">All Cards</option>
+                    <option value="visa">Visa</option>
+                    <option value="mastercard">Mastercard</option>
+                </select>
+                <button id="searchBtn" class="bg-slate-900 dark:bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 transition">Filter</button>
             </div>
 
-            <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50/50">
+            <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] uppercase font-black text-slate-400">
                         <tr>
-                            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Müştəri Profili</th>
-                            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Ödəmə Metodu</th>
-                            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Balans</th>
+                            <th class="p-6">Customer</th>
+                            <th class="p-6 text-center">Type</th>
+                            <th class="p-6 text-right">Balance</th>
                         </tr>
                     </thead>
-                    <tbody id="userTableBody" class="divide-y divide-slate-50">
+                    <tbody id="userTableBody" class="divide-y divide-slate-50 dark:divide-slate-700">
                         </tbody>
                 </table>
-                <div id="loader" class="hidden p-10 text-center text-slate-400 italic">Məlumatlar gətirilir...</div>
             </div>
         </div>
 
         <div class="lg:col-span-1">
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 sticky top-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-extrabold text-slate-800">Rich List</h2>
-                    <span class="text-xl">🏆</span>
-                </div>
-                <div id="leaderboardList" class="space-y-4">
-                    </div>
-                <div class="mt-8 p-4 bg-slate-50 rounded-2xl">
-                    <p class="text-[10px] text-slate-400 font-bold leading-relaxed">
-                        * Bu siyahı sonuncu analiz nəticəsində ən yüksək balansa malik 5 istifadəçini göstərir.
-                    </p>
-                </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm sticky top-8 border border-blue-50 dark:border-slate-700">
+                <h2 class="text-lg font-black mb-4">Rich List 🔥</h2>
+                <div id="leaderboardList" class="space-y-3"></div>
             </div>
         </div>
     </main>
+
+    <div id="userModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl modal-animate relative">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600">✕</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, limit, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // BURANI ÖZ MƏLUMATLARINLA DOLDUR
-       const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyAx-jHMIBpWtIRNHSK2NJRoTKmKl3Fst8Q",
   authDomain: "api-test-thefeerid.firebaseapp.com",
   databaseURL: "https://api-test-thefeerid-default-rtdb.firebaseio.com",
@@ -134,107 +111,100 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 1. Analizləri Yüklə (analyze.js-dən gələn datanı oxuyur)
-        async function loadDashboardStats() {
-            try {
-                const statsDoc = await getDoc(doc(db, "system", "dashboard_stats"));
-                if (statsDoc.exists()) {
-                    const s = statsDoc.data();
-                    document.getElementById('totalUsers').innerText = s.totalUsers.toLocaleString();
-                    document.getElementById('avgBalance').innerText = "$" + s.avgBalance;
-                    document.getElementById('popCard').innerText = s.popularCard;
-                    document.getElementById('lastUpdate').innerText = s.lastUpdated;
+        // Theme Toggle Logic
+        const themeBtn = document.getElementById('themeToggle');
+        themeBtn.onclick = () => {
+            document.documentElement.classList.toggle('dark');
+            document.getElementById('themeIcon').innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+        };
 
-                    const lbHTML = s.topLeaderboard.map((u, i) => `
-                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition cursor-default">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-black text-slate-300">#${i+1}</span>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-700 leading-none">${u.name}</p>
-                                    <p class="text-[10px] text-slate-400 mt-1">${u.country}</p>
-                                </div>
-                            </div>
-                            <p class="text-sm font-black text-blue-600">$${u.balance.toLocaleString()}</p>
-                        </div>
-                    `).join('');
-                    document.getElementById('leaderboardList').innerHTML = lbHTML;
-                }
-            } catch (e) { console.error("Stats error:", e); }
+        async function loadStats() {
+            const statsDoc = await getDoc(doc(db, "system", "dashboard_stats"));
+            if (statsDoc.exists()) {
+                const s = statsDoc.data();
+                document.getElementById('totalUsers').innerText = s.totalUsers.toLocaleString();
+                document.getElementById('avgBalance').innerText = "$" + s.avgBalance;
+                document.getElementById('popCard').innerText = s.popularCard;
+                document.getElementById('lastUpdate').innerText = "Last sync: " + s.lastUpdated;
+
+                document.getElementById('leaderboardList').innerHTML = s.topLeaderboard.map((u, i) => `
+                    <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                        <span class="text-xs font-bold text-blue-500">#${i+1}</span>
+                        <p class="text-sm font-bold truncate px-2">${u.name}</p>
+                        <p class="text-sm font-black text-emerald-500">$${u.balance.toLocaleString()}</p>
+                    </div>
+                `).join('');
+            }
         }
 
-        // 2. Əsas Datanı Çək və Render Et
-        async function fetchCustomerData() {
+        async function fetchUsers() {
             const tableBody = document.getElementById('userTableBody');
-            const loader = document.getElementById('loader');
-            
-            const nameVal = document.getElementById('nameFilter').value.toLowerCase();
-            const cardVal = document.getElementById('cardTypeFilter').value;
-            const countryVal = document.getElementById('countryFilter').value;
-
-            loader.classList.remove('hidden');
-            tableBody.innerHTML = '';
+            const name = document.getElementById('nameFilter').value.toLowerCase();
+            const card = document.getElementById('cardTypeFilter').value;
 
             let q = query(collection(db, "customers"), limit(50));
+            if (name) q = query(q, where("first_name_lower", ">=", name), where("first_name_lower", "<=", name + "\uf8ff"));
+            if (card) q = query(q, where("card_type", "==", card));
 
-            if (nameVal) {
-                q = query(q, where("first_name_lower", ">=", nameVal), where("first_name_lower", "<=", nameVal + "\uf8ff"));
-            }
-            if (cardVal) {
-                q = query(q, where("card_type", "==", cardVal));
-            }
-            if (countryVal) {
-                q = query(q, where("country", "==", countryVal));
-            }
-
-            try {
-                const snapshot = await getDocs(q);
-                loader.classList.add('hidden');
-                
-                if (snapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="p-20 text-center text-slate-300 italic">Heç bir nəticə tapılmadı.</td></tr>';
-                    return;
-                }
-
-                tableBody.innerHTML = snapshot.docs.map(doc => {
-                    const u = doc.data();
-                    const bal = parseFloat(u.moey.replace(/[$,]/g, '')) || 0;
-                    const balClass = bal > 500 ? 'text-emerald-600' : (bal < 20 ? 'text-rose-500' : 'text-slate-700');
-
-                    return `
-                        <tr class="group hover:bg-slate-50 transition">
-                            <td class="p-6 flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 font-extrabold text-sm border border-slate-200 group-hover:from-blue-500 group-hover:to-blue-600 group-hover:text-white transition-all duration-300">
-                                    ${u.first_name[0]}${u.last_name[0]}
-                                </div>
-                                <div>
-                                    <p class="font-bold text-slate-800">${u.first_name} ${u.last_name}</p>
-                                    <p class="text-[11px] text-slate-400 font-medium">${u.email}</p>
-                                </div>
-                            </td>
-                            <td class="p-6 text-center">
-                                <span class="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-500 rounded-lg group-hover:bg-slate-900 group-hover:text-white transition-colors uppercase tracking-widest">${u.card_type}</span>
-                                <p class="text-[10px] font-mono text-slate-300 mt-2 tracking-tighter">**** ${u.card.slice(-4)}</p>
-                            </td>
-                            <td class="p-6 text-right">
-                                <p class="font-black text-lg ${balClass} tracking-tight">${u.moey}</p>
-                                <p class="text-[9px] font-bold text-slate-300 uppercase">${u.currency_code} | ${u.country}</p>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch (err) {
-                console.error("Fetch error:", err);
-                loader.innerText = "Xəta: " + err.message;
-            }
+            const snapshot = await getDocs(q);
+            tableBody.innerHTML = snapshot.docs.map(doc => {
+                const u = doc.data();
+                return `
+                    <tr onclick='showUserDetails(${JSON.stringify(u)})' class="cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700/50 transition">
+                        <td class="p-6">
+                            <p class="font-bold text-sm">${u.first_name} ${u.last_name}</p>
+                            <p class="text-[10px] text-slate-400">${u.email}</p>
+                        </td>
+                        <td class="p-6 text-center">
+                            <span class="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-slate-900 rounded-lg uppercase">${u.card_type}</span>
+                        </td>
+                        <td class="p-6 text-right font-black text-blue-600 dark:text-blue-400">
+                            ${u.moey}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        // Event Listeners
-        document.getElementById('searchBtn').addEventListener('click', fetchCustomerData);
-        window.onload = () => {
-            loadDashboardStats();
-            fetchCustomerData();
+        window.showUserDetails = (user) => {
+            const modal = document.getElementById('userModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 rounded-3xl bg-blue-600 text-white flex items-center justify-center text-xl font-black">
+                        ${user.first_name[0]}${user.last_name[0]}
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black">${user.first_name} ${user.last_name}</h2>
+                        <p class="text-sm text-slate-400">${user.email}</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Country</p>
+                        <p class="font-bold">${user.country}</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Currency</p>
+                        <p class="font-bold">${user.currency_code}</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl col-span-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Card Number</p>
+                        <p class="font-mono font-bold tracking-widest">${user.card}</p>
+                    </div>
+                    <div class="p-4 bg-blue-600 text-white rounded-2xl col-span-2 text-center">
+                        <p class="text-[10px] font-bold opacity-70 uppercase">Total Balance</p>
+                        <p class="text-2xl font-black">${user.moey}</p>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
         };
+
+        window.closeModal = () => document.getElementById('userModal').classList.add('hidden');
+        
+        document.getElementById('searchBtn').onclick = fetchUsers;
+        window.onload = () => { loadStats(); fetchUsers(); };
     </script>
 </body>
 </html>
