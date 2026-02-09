@@ -5,127 +5,146 @@
     <title>Firestore Advanced API</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 p-4 md:p-8">
+<body class="bg-gray-50 font-sans text-gray-900">
 
-    <div class="max-w-6xl mx-auto">
-        <div class="bg-white p-6 rounded-2xl shadow-sm mb-6 border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input type="text" id="nameFilter" placeholder="Adla axtar (kiçik hərflə)..." class="p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
-            
-            <select id="cardTypeFilter" class="p-2 border rounded-lg outline-none">
-                <option value="">Bütün Kartlar</option>
-                <option value="visa">Visa</option>
-                <option value="mastercard">Mastercard</option>
-                <option value="maestro">Maestro</option>
-            </select>
-
-            <select id="currencyFilter" class="p-2 border rounded-lg outline-none">
-                <option value="">Bütün Valyutalar</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="UAH">UAH</option>
-            </select>
-
-            <button id="searchBtn" class="bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">Axtar</button>
+    <div id="statsBar" class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto mt-8 px-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+            <p class="text-gray-500 text-sm font-medium">Cəmi İstifadəçi</p>
+            <h3 id="totalUsers" class="text-2xl font-bold">...</h3>
         </div>
-
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-slate-800 text-white">
-                    <tr>
-                        <th class="p-4">Müştəri</th>
-                        <th class="p-4">Kart</th>
-                        <th class="p-4">Balans</th>
-                        <th class="p-4">Ölkə</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody">
-                    <tr><td colspan="4" class="p-10 text-center text-gray-400">Yüklənir...</td></tr>
-                </tbody>
-            </table>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+            <p class="text-gray-500 text-sm font-medium">Orta Balans</p>
+            <h3 id="avgBalance" class="text-2xl font-bold">...</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-purple-500">
+            <p class="text-gray-500 text-sm font-medium">Ən Populyar Kart</p>
+            <h3 id="popCard" class="text-2xl font-bold capitalize">...</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-orange-500">
+            <p class="text-gray-500 text-sm font-medium">Son Yenilənmə</p>
+            <h3 id="lastUpdate" class="text-xs text-gray-400 mt-2">...</h3>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // ÖZ KONFİQURASİYANIZI BURA ƏLAVƏ EDİN
-       const firebaseConfig = {
-  apiKey: "AIzaSyAx-jHMIBpWtIRNHSK2NJRoTKmKl3Fst8Q",
-  authDomain: "api-test-thefeerid.firebaseapp.com",
-  databaseURL: "https://api-test-thefeerid-default-rtdb.firebaseio.com",
-  projectId: "api-test-thefeerid",
-  storageBucket: "api-test-thefeerid.firebasestorage.app",
-  messagingSenderId: "129418422478",
-  appId: "1:129418422478:web:970653fc985acb4ce4c89f",
-  measurementId: "G-B5DVJXYZN2"
-};
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        async function getData() {
-    const tableBody = document.getElementById('userTableBody');
-    const nameVal = document.getElementById('nameFilter').value.toLowerCase();
-    const cardVal = document.getElementById('cardTypeFilter').value;
-    const currVal = document.getElementById('currencyFilter').value;
-
-    let q = collection(db, "customers");
-
-    // 1. AD FİLTRİ (Əsas dəyişiklik buradadır)
-    if (nameVal) {
-        // Bu kod "ca" yazanda "Caresse", "Camilla" və s. hamısını tapacaq
-        q = query(q, 
-            where("first_name_lower", ">=", nameVal), 
-            where("first_name_lower", "<=", nameVal + "\uf8ff")
-        );
-    }
-
-    // 2. KART FİLTRİ
-    if (cardVal) {
-        q = query(q, where("card_type", "==", cardVal));
-    }
-
-    // 3. VALYUTA FİLTRİ
-    if (currVal) {
-        q = query(q, where("currency_code", "==", currVal));
-    }
-
-    // Əgər heç bir filtr yoxdursa, standart limit qoyaq
-    if (!nameVal && !cardVal && !currVal) {
-        q = query(q, limit(100));
-    }
-
-    try {
-        const querySnapshot = await getDocs(q);
-        let html = "";
+    <main class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 mt-10 px-4">
         
-        querySnapshot.forEach((doc) => {
-            const u = doc.data();
-            html += `
-                <tr class="border-b hover:bg-slate-50">
-                    <td class="p-4">
-                        <div class="font-bold">${u.first_name} ${u.last_name}</div>
-                        <div class="text-xs text-gray-400">${u.email}</div>
-                    </td>
-                    <td class="p-4 text-xs font-mono uppercase">${u.card_type}</td>
-                    <td class="p-4 font-bold text-green-600">${u.moey}</td>
-                    <td class="p-4">${u.country}</td>
-                </tr>`;
-        });
+        <div class="flex-1">
+            <div class="bg-white p-6 rounded-3xl shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="text-xs font-bold text-gray-400 ml-1">ADLA AXTARIŞ</label>
+                    <input type="text" id="nameFilter" placeholder="Məs: Rebeka" class="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-400 transition">
+                </div>
+                <div class="w-40">
+                    <label class="text-xs font-bold text-gray-400 ml-1">KART NÖVÜ</label>
+                    <select id="cardTypeFilter" class="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none">
+                        <option value="">Hamısı</option>
+                        <option value="visa">Visa</option>
+                        <option value="mastercard">Mastercard</option>
+                    </select>
+                </div>
+                <div class="w-40">
+                    <label class="text-xs font-bold text-gray-400 ml-1">ÖLKƏ</label>
+                    <input type="text" id="countryFilter" placeholder="Məs: Ukraine" class="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none">
+                </div>
+                <button id="searchBtn" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:bg-blue-700 transition transform active:scale-95">
+                    Filtrlə
+                </button>
+            </div>
 
-        tableBody.innerHTML = html || '<tr><td colspan="4" class="p-10 text-center">Nəticə tapılmadı</td></tr>';
-    } catch (error) {
-        console.error("Xəta:", error);
-        // Əgər "Index Required" xətası çıxsa, konsoldakı linkə basmalısan
-    }
-}
+            <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-5 font-semibold">Müştəri</th>
+                            <th class="p-5 font-semibold">Kart Detalları</th>
+                            <th class="p-5 font-semibold text-right">Balans</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody" class="divide-y divide-gray-50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
 
-        document.getElementById('searchBtn').addEventListener('click', getData);
-        window.onload = getData;
+        <div class="w-full lg:w-80 space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-yellow-100">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span>🏆</span> Rich List (TOP 5)
+                </h2>
+                <div id="leaderboardList" class="space-y-4">
+                    </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // Firebase importlarını və config-i bura əlavə et (əvvəlki kimi)
+        import { doc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 1. Analizləri Bazadan Çək və Yaz
+        async function loadStats() {
+            const statsDoc = await getDoc(doc(db, "system", "dashboard_stats"));
+            if (statsDoc.exists()) {
+                const s = statsDoc.data();
+                document.getElementById('totalUsers').innerText = s.totalUsers;
+                document.getElementById('avgBalance').innerText = "$" + s.avgBalance;
+                document.getElementById('popCard').innerText = s.popularCard;
+                document.getElementById('lastUpdate').innerText = "Son analiz: " + s.lastUpdated;
+
+                // Leaderboard render
+                const lbHTML = s.topLeaderboard.map((u, index) => `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400">#${index+1}</p>
+                            <p class="text-sm font-bold text-gray-700">${u.name}</p>
+                        </div>
+                        <p class="text-blue-600 font-bold">$${u.balance.toLocaleString()}</p>
+                    </div>
+                `).join('');
+                document.getElementById('leaderboardList').innerHTML = lbHTML;
+            }
+        }
+
+        // 2. Təkmilləşmiş Axtarış (Ölkə filtri daxil)
+        async function getData() {
+            const tableBody = document.getElementById('userTableBody');
+            const name = document.getElementById('nameFilter').value.toLowerCase();
+            const card = document.getElementById('cardTypeFilter').value;
+            const country = document.getElementById('countryFilter').value;
+
+            let q = query(collection(db, "customers"), limit(50));
+
+            if (name) q = query(q, where("first_name_lower", ">=", name), where("first_name_lower", "<=", name + "\uf8ff"));
+            if (card) q = query(q, where("card_type", "==", card));
+            if (country) q = query(q, where("country", "==", country)); // Diqqət: Böyük-kiçik hərfə həssas ola bilər
+
+            const snapshot = await getDocs(q);
+            tableBody.innerHTML = snapshot.docs.map(doc => {
+                const u = doc.data();
+                return `
+                    <tr class="hover:bg-blue-50/30 transition">
+                        <td class="p-5">
+                            <p class="font-bold text-gray-800">${u.first_name} ${u.last_name}</p>
+                            <p class="text-xs text-gray-400">${u.email}</p>
+                        </td>
+                        <td class="p-5">
+                            <span class="text-[10px] font-black bg-gray-800 text-white px-2 py-1 rounded shadow-sm">${u.card_type.toUpperCase()}</span>
+                            <p class="text-xs font-mono text-gray-500 mt-1">${u.card}</p>
+                        </td>
+                        <td class="p-5 text-right font-black text-slate-700">
+                            ${u.moey}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.onload = () => { loadStats(); getData(); };
+        document.getElementById('searchBtn').onclick = getData;
     </script>
 </body>
 </html>
+
 
 
 
