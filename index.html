@@ -1,57 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" class="dark"> <head>
+<html lang="en" class="dark">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinPulse Pro | Dark Edition</title>
+    <title>FinPulse Pro | Elite Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    scale: { '102': '1.02' }
+                }
+            }
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .truncate-custom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-        /* Modalın daxili scrollunu gizlətmək və fix saxlamaq üçün */
-        #modalContent { scrollbar-width: none; -ms-overflow-style: none; }
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        /* Hamar keçid animasiyaları */
+        .hover-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hover-card:hover { transform: translateY(-2px) scale(1.01); }
+        .row-hover:hover { background-color: rgba(59, 130, 246, 0.05); transform: scale(1.005); }
+        #modalContent { scrollbar-width: none; }
         #modalContent::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen">
 
-    <nav class="max-w-[1600px] mx-auto p-6 flex justify-between items-center border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <nav class="max-w-[1600px] mx-auto p-6 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-blue-900/20">FP</div>
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-blue-500/30">FP</div>
             <div>
                 <h1 class="text-xl font-extrabold tracking-tighter uppercase leading-none">FinPulse Pro</h1>
-                <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase italic">Secure Database</span>
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase italic">Secure Database</span>
             </div>
         </div>
-        <button id="themeToggle" class="p-3 bg-slate-800 rounded-2xl border border-slate-700 hover:bg-slate-700 transition">
+        <button id="themeToggle" class="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:rotate-12 transition-all shadow-sm">
             <span id="themeIcon" class="text-lg">☀️</span>
         </button>
     </nav>
 
     <header class="max-w-[1600px] mx-auto p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-slate-900 p-6 rounded-[2rem] border border-slate-800 shadow-xl">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Users</p>
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover-card">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Users</p>
             <h3 id="totalUsers" class="text-3xl font-black italic">...</h3>
         </div>
-        <div class="bg-slate-900 p-6 rounded-[2rem] border border-slate-800 shadow-xl">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Avg Balance</p>
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover-card">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg Balance</p>
             <h3 id="avgBalance" class="text-3xl font-black text-emerald-500 italic">...</h3>
         </div>
-        <div class="bg-slate-900 p-6 rounded-[2rem] border border-slate-800 shadow-xl">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Popular Card</p>
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover-card">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Popular Card</p>
             <h3 id="popCard" class="text-3xl font-black uppercase italic">...</h3>
         </div>
-        <div class="bg-slate-900 p-6 rounded-[2rem] border border-slate-800 shadow-xl text-center">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">System Status</p>
-            <div class="flex items-center justify-center gap-2 mt-2">
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-center hover-card">
+            <div class="flex items-center gap-2">
                 <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span class="text-xs font-bold text-emerald-500 uppercase">Live</span>
+                <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Live Terminal</span>
             </div>
         </div>
     </header>
@@ -59,33 +66,33 @@
     <main class="max-w-[1600px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-5 gap-8">
         
         <div class="lg:col-span-4 space-y-6">
-            <div class="bg-slate-900 p-6 rounded-[2.5rem] flex flex-wrap gap-4 items-end border border-slate-800">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-wrap gap-4 items-end">
                 <div class="flex-1 min-w-[200px]">
-                    <input type="text" id="nameFilter" placeholder="Search by name..." class="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/50 transition text-sm">
+                    <input type="text" id="nameFilter" placeholder="Search client name..." class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/30 transition text-sm dark:text-white">
                 </div>
                 <div class="w-48">
-                    <select id="cardTypeFilter" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl outline-none text-sm text-slate-400 appearance-none">
+                    <select id="cardTypeFilter" class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm text-slate-500 appearance-none">
                         <option value="">All Card Types</option>
                         <option value="visa">Visa</option>
                         <option value="mastercard">Mastercard</option>
                         <option value="jcb">JCB</option>
                     </select>
                 </div>
-                <button id="searchBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-2xl font-black uppercase transition-all active:scale-95 shadow-lg shadow-blue-900/20">Filter</button>
+                <button id="searchBtn" class="bg-slate-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white px-10 py-4 rounded-2xl font-black uppercase transition-all active:scale-95 shadow-lg shadow-blue-500/10">Filter</button>
             </div>
 
-            <div class="bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden">
+            <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-950/50 text-[10px] uppercase font-black text-slate-500 tracking-widest">
+                        <thead class="bg-slate-50 dark:bg-slate-950/50 text-[10px] uppercase font-black text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800">
                             <tr>
                                 <th class="p-6">Client</th>
-                                <th class="p-6">Secure Info</th>
+                                <th class="p-6">Contact / Security</th>
                                 <th class="p-6 text-center">Network</th>
                                 <th class="p-6 text-right">Balance</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody" class="divide-y divide-slate-800">
+                        <tbody id="userTableBody" class="divide-y divide-slate-50 dark:divide-slate-800">
                             </tbody>
                     </table>
                 </div>
@@ -93,32 +100,33 @@
         </div>
 
         <div class="lg:col-span-1">
-            <div class="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 sticky top-28 shadow-2xl">
-                <h2 class="text-lg font-black mb-6 italic text-blue-500">🏆 RICH LIST</h2>
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 sticky top-28 shadow-xl">
+                <h2 class="text-xs font-black mb-6 tracking-widest text-blue-600 dark:text-blue-500 uppercase italic">💎 Elite Investors</h2>
                 <div id="leaderboardList" class="space-y-3"></div>
             </div>
         </div>
     </main>
 
-    <div id="userModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 cursor-pointer" onclick="closeModalOutside(event)">
-        <div class="bg-slate-900 w-full max-w-2xl rounded-[3rem] border border-slate-800 shadow-2xl relative cursor-default overflow-hidden" onclick="event.stopPropagation()">
-            <div class="p-8 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+    <div id="userModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer" onclick="closeModalOutside(event)">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl relative cursor-default overflow-hidden animate-in zoom-in-95 duration-200" onclick="event.stopPropagation()">
+            
+            <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div id="modalInitial" class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black"></div>
+                    <div id="modalInitial" class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black shadow-lg"></div>
                     <div>
-                        <h2 id="modalName" class="text-xl font-black text-white">...</h2>
-                        <span id="modalId" class="text-[10px] font-bold text-slate-500 tracking-widest">ID: ...</span>
+                        <h2 id="modalName" class="text-xl font-black text-slate-800 dark:text-white">...</h2>
+                        <span id="modalId" class="text-[10px] font-bold text-slate-400 tracking-widest">ID: ...</span>
                     </div>
                 </div>
-                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition">✕</button>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-colors font-bold text-sm">✕</button>
             </div>
 
-            <div id="modalContent" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-hidden">
+            <div id="modalContent" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[480px] overflow-hidden">
                 </div>
 
-            <div class="p-8 border-t border-slate-800 bg-slate-950/50 flex justify-between items-center">
+            <div class="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex justify-between items-center">
                 <h4 id="modalBalance" class="text-3xl font-black text-emerald-500 italic">...</h4>
-                <div id="modalCurrency" class="text-xl font-black text-slate-600"></div>
+                <div id="modalCurrency" class="text-xl font-black text-slate-300 dark:text-slate-600"></div>
             </div>
         </div>
     </div>
@@ -127,6 +135,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, limit, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // CONFIG
         const firebaseConfig = {
   apiKey: "AIzaSyAx-jHMIBpWtIRNHSK2NJRoTKmKl3Fst8Q",
   authDomain: "api-test-thefeerid.firebaseapp.com",
@@ -140,12 +149,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Theme Toggle (Simplified)
-        document.getElementById('themeToggle').onclick = () => {
-            document.documentElement.classList.toggle('dark');
-            document.getElementById('themeIcon').innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+        // REAL WORKING DARK MODE TOGGLE
+        const themeBtn = document.getElementById('themeToggle');
+        themeBtn.onclick = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         };
 
+        // Load Analytics
         async function loadStats() {
             const statsDoc = await getDoc(doc(db, "system", "dashboard_stats"));
             if (statsDoc.exists()) {
@@ -155,10 +167,10 @@
                 document.getElementById('popCard').innerText = s.popularCard;
 
                 document.getElementById('leaderboardList').innerHTML = s.topLeaderboard.map((u, i) => `
-                    <div class="flex items-center justify-between p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
-                        <span class="text-[10px] font-black text-slate-600">#${i+1}</span>
-                        <p class="text-sm font-bold truncate w-28 text-slate-300">${u.name}</p>
-                        <p class="text-sm font-black text-emerald-500">$${u.balance.toLocaleString()}</p>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover-card">
+                        <span class="text-[10px] font-black text-slate-300 dark:text-slate-700">#${i+1}</span>
+                        <p class="text-sm font-bold truncate w-24 text-slate-600 dark:text-slate-400">${u.name}</p>
+                        <p class="text-sm font-black text-emerald-500 italic">$${u.balance.toLocaleString()}</p>
                     </div>
                 `).join('');
             }
@@ -177,26 +189,26 @@
             tableBody.innerHTML = snapshot.docs.map(doc => {
                 const u = doc.data();
                 return `
-                    <tr onclick='showUserDetails(${JSON.stringify(u)})' class="cursor-pointer hover:bg-blue-600/5 transition border-b border-slate-800 group">
+                    <tr onclick='showUserDetails(${JSON.stringify(u)})' class="cursor-pointer row-hover transition-all border-b border-slate-100 dark:border-slate-800 group">
                         <td class="p-6">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-black group-hover:bg-blue-600 group-hover:text-white transition-all uppercase italic">
+                                <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black group-hover:bg-blue-600 group-hover:text-white transition-all uppercase italic">
                                     ${u.first_name[0]}${u.last_name[0]}
                                 </div>
-                                <div class="max-w-[150px]">
-                                    <p class="font-bold text-sm truncate">${u.first_name} ${u.last_name}</p>
-                                    <p class="text-[10px] text-slate-500 uppercase truncate">${u.country}</p>
+                                <div>
+                                    <p class="font-bold text-sm text-slate-800 dark:text-slate-200">${u.first_name} ${u.last_name}</p>
+                                    <p class="text-[10px] text-slate-400 uppercase tracking-tight">${u.country}</p>
                                 </div>
                             </div>
                         </td>
                         <td class="p-6">
-                            <p class="text-xs font-bold text-slate-400 truncate max-w-[180px]">${u.email}</p>
-                            <p class="text-[9px] font-mono text-slate-600 mt-1 uppercase tracking-tighter">IP: ${u.ip_address}</p>
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 truncate max-w-[180px]">${u.email}</p>
+                            <p class="text-[9px] font-mono text-slate-400 mt-1 uppercase">IP: ${u.ip_address}</p>
                         </td>
                         <td class="p-6 text-center">
-                            <span class="text-[9px] font-black px-3 py-1 bg-slate-950 border border-slate-800 rounded-md uppercase">${u.card_type}</span>
+                            <span class="text-[9px] font-black px-3 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-md uppercase text-slate-500">${u.card_type}</span>
                         </td>
-                        <td class="p-6 text-right font-black text-blue-500 italic text-sm">
+                        <td class="p-6 text-right font-black text-blue-600 dark:text-blue-500 italic text-sm">
                             ${u.moey}
                         </td>
                     </tr>
@@ -212,18 +224,18 @@
             document.getElementById('modalCurrency').innerText = user.currency_code;
 
             const fields = [
-                { label: 'Gender', val: user.gender },
-                { label: 'Phone', val: user.phone },
-                { label: 'IP Address', val: user.ip_address },
-                { label: 'City', val: user.city },
+                { label: 'GENDER', val: user.gender },
+                { label: 'PHONE', val: user.phone },
+                { label: 'IP ADDRESS', val: user.ip_address },
+                { label: 'LOCATION', val: user.city + ", " + user.country },
                 { label: 'IBAN', val: user.iban, full: true },
-                { label: 'Card No', val: user.card, full: true }
+                { label: 'CARD NUMBER', val: user.card, full: true }
             ];
 
             document.getElementById('modalContent').innerHTML = fields.map(f => `
-                <div class="${f.full ? 'md:col-span-2' : ''} p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
-                    <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">${f.label}</p>
-                    <p class="text-xs font-bold text-slate-300 break-all">${f.val}</p>
+                <div class="${f.full ? 'md:col-span-2' : ''} p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl">
+                    <p class="text-[8px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest mb-1">${f.label}</p>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 break-all">${f.val}</p>
                 </div>
             `).join('');
 
@@ -234,7 +246,15 @@
         window.closeModalOutside = (e) => { if(e.target.id === 'userModal') closeModal(); };
 
         document.getElementById('searchBtn').onclick = fetchUsers;
-        window.onload = () => { loadStats(); fetchUsers(); };
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').innerText = '🌙';
+            }
+            loadStats();
+            fetchUsers();
+        };
     </script>
 </body>
 </html>
