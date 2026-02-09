@@ -48,28 +48,31 @@
 
         // Əsas Funksiya: Dataları gətir
         async function fetchUsers(searchTerm = "") {
-            const tableBody = document.getElementById('userTableBody');
-            let userQuery;
+    const userQuery = query(ref(db, '/'), limitToFirst(1000)); // İlk 1000 nəfəri çəkirik
+    
+    try {
+        const snapshot = await get(userQuery);
+        const data = snapshot.val();
+        let usersArray = data ? Object.values(data) : [];
 
-            if (searchTerm) {
-                // AXTARIŞ REJİMİ: Server bütün bazada axtarır, amma yalnız nəticəni qaytarır
-                isSearching = true;
-                userQuery = query(ref(db, '/'), orderByChild('first_name'), equalTo(searchTerm));
-                document.getElementById('paginationControls').classList.add('hidden');
-            } else {
-                // NORMAL REJİM: 100-100 yükləmə
-                isSearching = false;
-                userQuery = query(ref(db, '/'), limitToFirst(currentLimit));
-                document.getElementById('paginationControls').classList.remove('hidden');
-            }
-
-            try {
-                const snapshot = await get(userQuery);
-                const data = snapshot.val();
-                const usersArray = data ? Object.values(data) : [];
-                renderTable(usersArray);
-            } catch (err) { console.error("Xəta:", err); }
+        if (searchTerm) {
+            // BRAUZERDƏ AXTARIŞ: Böyük-kiçik hərf fərqini aradan qaldırır
+            const lowerSearch = searchTerm.toLowerCase();
+            usersArray = usersArray.filter(u => 
+                u.first_name.toLowerCase().includes(lowerSearch) || 
+                u.last_name.toLowerCase().includes(lowerSearch) ||
+                u.email.toLowerCase().includes(lowerSearch)
+            );
+            document.getElementById('paginationControls').classList.add('hidden');
+        } else {
+            document.getElementById('paginationControls').classList.remove('hidden');
+            // Əgər axtarış yoxdursa, limiti tətbiq et
+            usersArray = usersArray.slice(0, currentLimit);
         }
+
+        renderTable(usersArray);
+    } catch (err) { console.error("Xəta:", err); }
+}
 
         function renderTable(users) {
             const tableBody = document.getElementById('userTableBody');
@@ -104,3 +107,4 @@
     </script>
 </body>
 </html>
+
