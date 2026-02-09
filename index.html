@@ -2,83 +2,104 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hissə-hissə Yükləmə (Pagination)</title>
+    <title>Professional Firebase API Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-5">
+<body class="bg-slate-50 p-6">
 
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold mb-5 text-gray-800">İstifadəçilər (Limitlə Yükləmə)</h1>
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <input type="text" id="searchInput" placeholder="Tam adı yazın və Enter basın (Məs: Rebeka)..." 
+                   class="w-full p-4 rounded-xl border-2 border-blue-100 shadow-sm focus:border-blue-500 outline-none transition-all">
+            <p class="text-xs text-gray-500 mt-2">* Server tərəfli axtarış üçün tam dəqiq ad yazılmalıdır.</p>
+        </div>
 
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-green-600 text-white">
-                        <th class="px-5 py-3 text-left">Ad Soyad</th>
-                        <th class="px-5 py-3 text-left">Email</th>
+                    <tr class="bg-slate-800 text-white">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Ad Soyad</th>
+                        <th class="p-4">Email</th>
+                        <th class="p-4">Ölkə</th>
                     </tr>
                 </thead>
-                <tbody id="userTableBody">
-                    </tbody>
+                <tbody id="userTableBody"></tbody>
             </table>
         </div>
 
-        <div class="mt-6 flex justify-center">
-            <button id="loadMoreBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition duration-300">
-                Daha çox yüklə...
+        <div id="paginationControls" class="mt-8 flex justify-center">
+            <button id="loadMoreBtn" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
+                Daha 100 nəfər yüklə
             </button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, query, orderByChild, limitToFirst, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, query, orderByChild, limitToFirst, equalTo, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = {
-            databaseURL: "https://api-test-thefeerid-default-rtdb.firebaseio.com/"
-        };
-
+        const firebaseConfig = { databaseURL: "https://api-test-thefeerid-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        let currentLimit = 10; // Hər dəfə neçə nəfər gəlsin
+        let currentLimit = 100;
+        let isSearching = false;
 
-        async function fetchUsers() {
-            // Sorğunu hazırlayırıq: ID-yə görə sırala və ilk X dənəsini gətir
-            const userQuery = query(ref(db, '/'), limitToFirst(currentLimit));
-            
+        // Əsas Funksiya: Dataları gətir
+        async function fetchUsers(searchTerm = "") {
+            const tableBody = document.getElementById('userTableBody');
+            let userQuery;
+
+            if (searchTerm) {
+                // AXTARIŞ REJİMİ: Server bütün bazada axtarır, amma yalnız nəticəni qaytarır
+                isSearching = true;
+                userQuery = query(ref(db, '/'), orderByChild('first_name'), equalTo(searchTerm));
+                document.getElementById('paginationControls').classList.add('hidden');
+            } else {
+                // NORMAL REJİM: 100-100 yükləmə
+                isSearching = false;
+                userQuery = query(ref(db, '/'), limitToFirst(currentLimit));
+                document.getElementById('paginationControls').classList.remove('hidden');
+            }
+
             try {
                 const snapshot = await get(userQuery);
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    const usersArray = Object.values(data);
-                    displayUsers(usersArray);
-                } else {
-                    alert("Daha məlumat yoxdur.");
-                }
-            } catch (error) {
-                console.error("Xəta:", error);
-            }
+                const data = snapshot.val();
+                const usersArray = data ? Object.values(data) : [];
+                renderTable(usersArray);
+            } catch (err) { console.error("Xəta:", err); }
         }
 
-        function displayUsers(users) {
+        function renderTable(users) {
             const tableBody = document.getElementById('userTableBody');
-            tableBody.innerHTML = users.map(user => `
-                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                    <td class="px-5 py-4">${user.first_name} ${user.last_name}</td>
-                    <td class="px-5 py-4">${user.email}</td>
+            if (users.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-400">Məlumat tapılmadı...</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = users.map(u => `
+                <tr class="border-b hover:bg-blue-50 transition-colors">
+                    <td class="p-4 text-gray-500">#${u.id}</td>
+                    <td class="p-4 font-medium">${u.first_name} ${u.last_name}</td>
+                    <td class="p-4 text-blue-600">${u.email}</td>
+                    <td class="p-4"><span class="bg-gray-200 px-2 py-1 rounded text-xs">${u.country}</span></td>
                 </tr>
             `).join('');
         }
 
-        // "Daha çox" düyməsinə basanda limiti artırırıq
+        // Event Listeners
         document.getElementById('loadMoreBtn').addEventListener('click', () => {
-            currentLimit += 10;
+            currentLimit += 100;
             fetchUsers();
         });
 
-        // İlk açılışda çağır
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchUsers(e.target.value.trim());
+            }
+        });
+
+        // İlkin yükləmə
         fetchUsers();
     </script>
 </body>
