@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase User API List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-5">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-5 text-gray-800">İstifadəçi Siyahısı</h1>
+
+        <input type="text" id="searchInput" placeholder="Ad və ya email ilə axtar..."
+            class="w-full p-3 mb-6 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr class="bg-blue-600 text-white">
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ad Soyad</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider">Ölkə</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // BURANI ÖZ FİREBASE MƏLUMATLARINLA DƏYİŞ
+        const firebaseConfig = {
+            databaseURL: "https://api-test-thefeerid-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const userRef = ref(db, '/');
+
+        let allUsers = [];
+
+        // Datanı çək
+        onValue(userRef, (snapshot) => {
+            const data = snapshot.val();
+            allUsers = Object.values(data);
+            displayUsers(allUsers);
+        });
+
+        // Ekranda göstər
+        function displayUsers(users) {
+            const tableBody = document.getElementById('userTableBody');
+            tableBody.innerHTML = users.map(user => `
+                <tr class="border-b border-gray-200">
+                    <td class="px-5 py-5 text-sm">${user.first_name} ${user.last_name}</td>
+                    <td class="px-5 py-5 text-sm">${user.email}</td>
+                    <td class="px-5 py-5 text-sm">${user.country}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Axtarış funksiyası
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                u.first_name.toLowerCase().includes(term) ||
+                u.email.toLowerCase().includes(term)
+            );
+            displayUsers(filtered);
+        });
+    </script>
+</body>
+
+</html>
